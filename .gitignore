@@ -1,2 +1,3 @@
 .idea
-supervisioned_model_blueprint/
+.venv
+__pycache__/
