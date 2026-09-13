@@ -1,0 +1,24 @@
+# ==============================================================================
+# Tech Challenge Fase 3 - Dependências do Ambiente de Machine Learning
+# Python >= 3.10
+# ==============================================================================
+
+# Manipulação e Processamento de Dados
+pandas>=2.2.0,<=3.1.0
+numpy>=1.26.0,<=2.4.0
+
+# Machine Learning, Pipelines e Validação Estatística
+scikit-learn>=1.4.0,<=1.10.0
+scipy>=1.12.0,<=1.17.0
+
+# Interpretabilidade e Explicabilidade de Modelos
+shap>=0.45.0,<=0.55.0
+
+# Visualização de Dados e Diagnósticos
+matplotlib>=3.8.0,<=3.12.0
+
+# Serialização de Artefatos
+joblib>=1.3.0,<=1.7.0
+
+# Testes Automatizados e Qualidade
+pytest>=8.0.0,<=10.0.0
