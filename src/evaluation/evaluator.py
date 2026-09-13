@@ -1,27 +1,31 @@
 """
-Model Evaluation and Diagnostic Reporting.
-Computes accuracy, confusion matrix decomposition, full classification report,
-and visual benchmark charts replicating IAS_Classificacao.ipynb.
+Evaluation Metrics and Diagnostic Reporting Module.
+Computes comprehensive statistical metrics across fitted Scikit-Learn Pipelines.
 """
 
 from typing import Dict, Any, List, Optional
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.metrics import (
     accuracy_score,
-    confusion_matrix,
-    classification_report,
     precision_score,
     recall_score,
-    f1_score
+    f1_score,
+    roc_auc_score,
+    confusion_matrix,
+    classification_report
 )
-from sklearn.tree import plot_tree
 
 
-def evaluate_predictions(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, Any]:
-    """Computes full set of classification metrics for true vs. predicted targets."""
-    return {
+def evaluate_predictions(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    y_prob: Optional[np.ndarray] = None
+) -> Dict[str, Any]:
+    """
+    Computes standard and probabilistic classification metrics.
+    """
+    metrics = {
         'accuracy': accuracy_score(y_true, y_pred),
         'precision': precision_score(y_true, y_pred, zero_division=0),
         'recall': recall_score(y_true, y_pred, zero_division=0),
@@ -29,18 +33,21 @@ def evaluate_predictions(y_true: np.ndarray, y_pred: np.ndarray) -> Dict[str, An
         'confusion_matrix': confusion_matrix(y_true, y_pred),
         'classification_report': classification_report(y_true, y_pred, zero_division=0)
     }
+    if y_prob is not None and len(np.unique(y_true)) > 1:
+        try:
+            metrics['roc_auc'] = roc_auc_score(y_true, y_prob)
+        except Exception:
+            metrics['roc_auc'] = np.nan
+    else:
+        metrics['roc_auc'] = np.nan
+
+    return metrics
 
 
 def explain_confusion_matrix(cm: np.ndarray) -> Dict[str, int]:
-    """
-    Deconstructs a binary confusion matrix into its 4 canonical components:
-    - TN (True Negative): Actual 0 predicted as 0
-    - FP (False Positive / Type I Error): Actual 0 predicted as 1
-    - FN (False Negative / Type II Error): Actual 1 predicted as 0
-    - TP (True Positive): Actual 1 predicted as 1
-    """
+    """Deconstructs binary confusion matrix into TN, FP, FN, TP."""
     if cm.shape != (2, 2):
-        raise ValueError("explain_confusion_matrix requires a 2x2 binary matrix.")
+        raise ValueError("Confusion matrix must be 2x2 binary.")
     tn, fp, fn, tp = cm.ravel()
     return {
         'TN': int(tn),
@@ -50,76 +57,40 @@ def explain_confusion_matrix(cm: np.ndarray) -> Dict[str, int]:
     }
 
 
-def generate_comparison_table(
-    y_true: np.ndarray,
-    predictions_dict: Dict[str, np.ndarray]
-) -> pd.DataFrame:
+def evaluate_fitted_pipelines(
+    fitted_pipelines: Dict[str, Any],
+    X_test: pd.DataFrame,
+    y_test: pd.Series
+) -> Tuple[pd.DataFrame, Dict[str, Dict[str, Any]]]:
     """
-    Builds a summary comparison DataFrame across all models, matching
-    the summary table in IAS_Classificacao.ipynb.
+    Evaluates a dictionary of fitted Scikit-Learn Pipelines on test data.
+    Returns summary DataFrame and detailed metrics per model.
     """
     records = []
-    for model_name, y_pred in predictions_dict.items():
-        acc = accuracy_score(y_true, y_pred)
-        prec = precision_score(y_true, y_pred, zero_division=0)
-        rec = recall_score(y_true, y_pred, zero_division=0)
-        f1 = f1_score(y_true, y_pred, zero_division=0)
+    detailed_metrics = {}
+
+    y_test_arr = y_test.to_numpy()
+
+    for name, pipe in fitted_pipelines.items():
+        y_pred = pipe.predict(X_test)
+        y_prob = None
+        if hasattr(pipe, "predict_proba"):
+            try:
+                y_prob = pipe.predict_proba(X_test)[:, 1]
+            except Exception:
+                y_prob = None
+
+        metrics = evaluate_predictions(y_test_arr, y_pred, y_prob=y_prob)
+        detailed_metrics[name] = metrics
+
         records.append({
-            'Modelo': model_name,
-            'Acurácia': round(acc, 4),
-            'Precisão': round(prec, 4),
-            'Recall': round(rec, 4),
-            'F1-Score': round(f1, 4)
+            'Modelo': name,
+            'Acurácia': round(metrics['accuracy'], 4),
+            'Precisão': round(metrics['precision'], 4),
+            'Recall': round(metrics['recall'], 4),
+            'F1-Score': round(metrics['f1_score'], 4),
+            'ROC-AUC': round(metrics['roc_auc'], 4) if not np.isnan(metrics['roc_auc']) else 'N/A'
         })
-    return pd.DataFrame(records).sort_values(by='Acurácia', ascending=False).reset_index(drop=True)
 
-
-def plot_model_comparison(
-    comparison_df: pd.DataFrame,
-    metric: str = 'Acurácia',
-    title: str = 'Comparação entre Modelos',
-    save_path: Optional[str] = None
-) -> None:
-    """Generates a bar chart comparing models on a given metric."""
-    plt.figure(figsize=(8, 5))
-    bars = plt.bar(comparison_df['Modelo'], comparison_df[metric], color=['#2b5c8f', '#4682b4', '#5f9ea0', '#87ceeb'])
-    plt.ylabel(metric)
-    plt.ylim(0, 1.1)
-    plt.title(title, fontsize=14, fontweight='bold')
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    
-    for bar in bars:
-        height = bar.get_height()
-        plt.annotate(f'{height:.3f}',
-                     xy=(bar.get_x() + bar.get_width() / 2, height),
-                     xytext=(0, 3),
-                     textcoords="offset points",
-                     ha='center', va='bottom', fontweight='bold')
-                     
-    plt.tight_layout()
-    if save_path:
-        plt.savefig(save_path, dpi=300)
-    plt.close()
-
-
-def plot_decision_tree_structure(
-    tree_model: Any,
-    feature_names: List[str],
-    class_names: List[str] = ['Não', 'Sim'],
-    save_path: Optional[str] = None
-) -> None:
-    """Visualizes the hierarchical decision rules of a trained Decision Tree."""
-    plt.figure(figsize=(18, 10))
-    plot_tree(
-        tree_model,
-        feature_names=feature_names,
-        class_names=class_names,
-        filled=True,
-        rounded=True,
-        fontsize=9
-    )
-    plt.title('Árvore de Classificação - Regras Hierárquicas', fontsize=16, fontweight='bold')
-    plt.tight_layout()
-    if save_path:
-        plt.savefig(save_path, dpi=300)
-    plt.close()
+    summary_df = pd.DataFrame(records).sort_values(by='F1-Score', ascending=False).reset_index(drop=True)
+    return summary_df, detailed_metrics
