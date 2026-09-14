@@ -152,6 +152,9 @@ def merge_gold_datasets(
         target_cols.append('target_atingiu_meta_anual_2024')
     if 'target_evolucao_positiva_2024' in uf_2024.columns:
         target_cols.append('target_evolucao_positiva_2024')
+    if 'resultado_alfabetizacao_uf_pct' in uf_2024.columns:
+        uf_2024['target_resultado_alfabetizacao_2024_pct'] = uf_2024['resultado_alfabetizacao_uf_pct']
+        target_cols.append('target_resultado_alfabetizacao_2024_pct')
         
     df_final = pd.merge(df_enriched, uf_2024[target_cols], on='sigla_uf', how='left')
     return df_final

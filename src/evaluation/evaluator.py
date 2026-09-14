@@ -94,3 +94,67 @@ def evaluate_fitted_pipelines(
 
     summary_df = pd.DataFrame(records).sort_values(by='F1-Score', ascending=False).reset_index(drop=True)
     return summary_df, detailed_metrics
+
+
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+
+def evaluate_regression_predictions(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    num_features: Optional[int] = None
+) -> Dict[str, Any]:
+    """
+    Computes standard regression metrics: MSE, RMSE, MAE, R2, and Adjusted R2.
+    """
+    mse = mean_squared_error(y_true, y_pred)
+    rmse = np.sqrt(mse)
+    mae = mean_absolute_error(y_true, y_pred)
+    r2 = r2_score(y_true, y_pred)
+    
+    metrics = {
+        'MSE': mse,
+        'RMSE': rmse,
+        'MAE': mae,
+        'R2': r2
+    }
+    
+    if num_features is not None and len(y_true) > num_features + 1:
+        n = len(y_true)
+        p = num_features
+        adj_r2 = 1.0 - ((1.0 - r2) * (n - 1) / (n - p - 1))
+        metrics['R2_Ajustado'] = adj_r2
+        
+    return metrics
+
+
+def evaluate_regression_pipelines(
+    fitted_pipelines: Dict[str, Any],
+    X_test: pd.DataFrame,
+    y_test: pd.Series
+) -> Tuple[pd.DataFrame, Dict[str, Dict[str, Any]]]:
+    """
+    Evaluates a dictionary of fitted Scikit-Learn Regression Pipelines on test data.
+    Returns summary DataFrame and detailed metrics per model.
+    """
+    records = []
+    detailed_metrics = {}
+
+    y_test_arr = y_test.to_numpy()
+    num_features = X_test.shape[1]
+
+    for name, pipe in fitted_pipelines.items():
+        y_pred = pipe.predict(X_test)
+        
+        metrics = evaluate_regression_predictions(y_test_arr, y_pred, num_features=num_features)
+        detailed_metrics[name] = metrics
+
+        records.append({
+            'Modelo': name,
+            'R2': round(metrics['R2'], 4),
+            'RMSE': round(metrics['RMSE'], 4),
+            'MAE': round(metrics['MAE'], 4),
+            'MSE': round(metrics['MSE'], 4)
+        })
+
+    summary_df = pd.DataFrame(records).sort_values(by='R2', ascending=False).reset_index(drop=True)
+    return summary_df, detailed_metrics

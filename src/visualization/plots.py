@@ -174,3 +174,66 @@ def plot_decision_tree_structure(
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
         plt.savefig(save_path, dpi=300)
     plt.close()
+
+
+def plot_regression_residuals(
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    model_name: str = "Modelo",
+    save_path: Optional[str] = None
+) -> None:
+    """
+    Diagnostic for regression:
+    1. Real vs Predicted scatter plot (with ideal y=x line)
+    2. Residuals vs Predicted scatter plot
+    """
+    residuals = y_true - y_pred
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    
+    # 1. Real vs Predito
+    axes[0].scatter(y_true, y_pred, alpha=0.7, color='teal', edgecolors='k')
+    min_val = min(y_true.min(), y_pred.min())
+    max_val = max(y_true.max(), y_pred.max())
+    axes[0].plot([min_val, max_val], [min_val, max_val], 'r--', lw=2, label='Linha Ideal (y = x)')
+    axes[0].set_xlabel('Valor Real', fontsize=11)
+    axes[0].set_ylabel('Valor Predito', fontsize=11)
+    axes[0].set_title(f'{model_name}: Real vs Predito', fontsize=12)
+    axes[0].legend()
+    axes[0].grid(True, linestyle='--', alpha=0.6)
+    
+    # 2. Residuos vs Predito
+    axes[1].scatter(y_pred, residuals, alpha=0.7, color='crimson', edgecolors='k')
+    axes[1].axhline(0, color='black', linestyle='--', lw=2)
+    axes[1].set_xlabel('Valor Predito', fontsize=11)
+    axes[1].set_ylabel('Resíduo (Real - Predito)', fontsize=11)
+    axes[1].set_title(f'{model_name}: Análise de Resíduos', fontsize=12)
+    axes[1].grid(True, linestyle='--', alpha=0.6)
+    
+    plt.tight_layout()
+    if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path, dpi=300)
+    plt.close()
+
+
+def plot_data_scatter(
+    x: np.ndarray,
+    y: np.ndarray,
+    x_label: str = "Feature",
+    y_label: str = "Target",
+    title: str = "Dispersão dos Dados",
+    save_path: Optional[str] = None
+) -> None:
+    """Plots a simple scatter plot of one feature vs the target to visualize the data distribution."""
+    plt.figure(figsize=(8, 6))
+    plt.scatter(x, y, alpha=0.7, color='#2ca02c', edgecolors='k')
+    plt.xlabel(x_label, fontsize=12, fontweight='bold')
+    plt.ylabel(y_label, fontsize=12, fontweight='bold')
+    plt.title(title, fontsize=14, fontweight='bold', pad=15)
+    plt.grid(True, linestyle='--', alpha=0.6)
+    
+    plt.tight_layout()
+    if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        plt.savefig(save_path, dpi=300)
+    plt.close()

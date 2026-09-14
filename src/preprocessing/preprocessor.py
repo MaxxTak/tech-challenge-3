@@ -59,7 +59,10 @@ def extract_raw_features_and_target(
         raise KeyError(f"Target column '{target_col}' not found in DataFrame.")
 
     # 1. Target vector
-    y = df_clean[target_col].astype(int)
+    if 'atingiu_meta' in target_col or 'evolucao_positiva' in target_col:
+        y = df_clean[target_col].astype(int)
+    else:
+        y = df_clean[target_col].astype(float)
 
     # 2. Columns to drop (metadata, IDs, and 2024 future outcome leakage)
     drop_cols = [
@@ -69,6 +72,7 @@ def extract_raw_features_and_target(
         '_ingestion_date', '_execution_id', 'ano', 'serie', 'rede', 'rede_resultado', 'rede_meta',
         # Target columns and 2024 outcome leakage
         'target_atingiu_meta_anual_2024', 'target_evolucao_positiva_2024', 'target',
+        'target_resultado_alfabetizacao_2024_pct',
         'uf_status_meta_2024', 'uf_variacao_pp_2024', 'status_meta_ano', 'status_meta_2030',
         # High nullity sample-level columns (no predictive variance)
         'qtd_alunos_amostra', 'qtd_alunos_alfabetizados_amostra', 'qtd_alunos_presentes_amostra',

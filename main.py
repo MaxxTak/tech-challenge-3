@@ -186,7 +186,115 @@ def main():
     print(f" -> [Modelo Serializado] Pipeline salva com sucesso em '{export_path}'")
 
     print("\n" + "=" * 70)
-    print("CONCLUSAO: Esteira executada com 100% de conformidade tecnica!")
+    print("CONCLUSAO: Esteira de Classificacao executada com sucesso!")
+    print("=" * 70)
+
+    # Chamada para o pipeline de regressão
+    run_regression_pipeline(df_merged)
+
+
+def run_regression_pipeline(df_merged: pd.DataFrame):
+    from src.modeling.hyperparameter_tuning import tune_all_regressors
+    from src.evaluation.evaluator import evaluate_regression_pipelines
+    from src.modeling.pipeline import NativeRegressionPipeline
+    from src.visualization.plots import plot_regression_residuals
+
+    print("\n\n" + "=" * 70)
+    print("ESTEIRA DE MACHINE LEARNING SUPERVISIONADO - REGRESSÃO")
+    print("Prevendo a taxa exata de alfabetização (resultado_alfabetizacao_uf_pct)")
+    print("=" * 70)
+
+    # 1. Extração para Regressão (alvo contínuo)
+    print("\n[1/5] Extraindo variaveis explicativas e isolando target continuo 2024...")
+    X, y, num_cols, cat_cols = extract_raw_features_and_target(
+        df_merged,
+        target_col='target_resultado_alfabetizacao_2024_pct'
+    )
+    # Filter out NaNs if any target values are missing
+    valid_idx = y.notna()
+    X = X[valid_idx]
+    y = y[valid_idx]
+    
+    print(f" -> Conjunto total valido: {len(X)} amostras.")
+    X_train, X_test, y_train, y_test = split_data(X, y, test_size=0.25, random_state=42, stratify=False)
+    
+    # 1.5 Gerar grafico de distribuicao (dados reais)
+    from src.visualization.plots import plot_data_scatter
+    if 'uf_taxa_alfabetizacao_2023' in X.columns:
+        data_plot_path = 'images/regression_data_scatter.png'
+        plot_data_scatter(
+            x=X['uf_taxa_alfabetizacao_2023'].to_numpy(),
+            y=y.to_numpy(),
+            x_label='Taxa Alfabetização UF 2023 (%)',
+            y_label='Resultado Alfabetização 2024 (%)',
+            title='Dispersão: Histórico (2023) vs Alvo (2024)',
+            save_path=data_plot_path
+        )
+        print(f" -> [Grafico] Dispersao de Dados salva em '{data_plot_path}'")
+
+    preprocessor = build_column_transformer(numeric_features=num_cols, categorical_features=cat_cols)
+
+    # 2. Otimização
+    print("\n[2/5] Executando GridSearchCV com KFold (k=5) para todos os modelos de regressao...")
+    cv_summary, best_estimators, best_model_name, best_pipeline = tune_all_regressors(
+        preprocessor=preprocessor,
+        X_train=X_train,
+        y_train=y_train,
+        n_splits=5,
+        scoring='neg_mean_squared_error',
+        random_state=42
+    )
+
+    print("\n" + "-" * 70)
+    print("DESEMPENHO NA VALIDACAO CRUZADA (K-FOLD):")
+    print("-" * 70)
+    print(cv_summary.to_string(index=False))
+
+    # 3. Avaliação no Teste Cego
+    print("\n[3/5] Avaliando modelos otimizados no conjunto de teste...")
+    test_summary, detailed_metrics = evaluate_regression_pipelines(best_estimators, X_test, y_test)
+    
+    print("\n" + "=" * 70)
+    print("RESULTADO FINAL DA REGRESSÃO (TESTE):")
+    print("=" * 70)
+    print(test_summary.to_string(index=False))
+    
+    # 4. Explicabilidade e Plots
+    print("\n[4/5] Gerando graficos de comparacao e residuos...")
+    comp_chart_path = 'images/regression_model_comparison.png'
+    plot_model_comparison(test_summary, metric='R2', title='Benchmark de Regressão (R²)', save_path=comp_chart_path)
+    
+    best_y_pred = best_estimators[best_model_name].predict(X_test)
+    resid_path = 'images/regression_residuals.png'
+    plot_regression_residuals(y_test.to_numpy(), best_y_pred, model_name=best_model_name, save_path=resid_path)
+    print(f" -> [Graficos] Salvos em images/")
+
+    if 'Decision Tree Regressor' in best_estimators:
+        from src.visualization.plots import plot_decision_tree_structure
+        dt_pipe = best_estimators['Decision Tree Regressor']
+        dt_reg = dt_pipe.named_steps['regressor']
+        dt_features = list(dt_pipe.named_steps['preprocessor'].get_feature_names_out())
+        dt_chart_path = 'images/regression_decision_tree.png'
+        # Pass None to class_names since it's a regression tree
+        plot_decision_tree_structure(
+            dt_reg,
+            feature_names=dt_features,
+            class_names=None,
+            save_path=dt_chart_path
+        )
+        print(f" -> [Grafico] Arvore de Decisao da Regressao salva em '{dt_chart_path}'")
+
+    # 5. Exportacao
+    print("\n[5/5] Serializando pipeline de regressao...")
+    container = NativeRegressionPipeline(preprocessor)
+    for m_name, m_pipe in best_estimators.items():
+        container.fitted_pipelines[m_name] = m_pipe
+    container.best_model_name = best_model_name
+    container.best_pipeline = best_pipeline
+    container.export('reports/pipeline_regressao_consolidada.joblib')
+
+    print("\n" + "=" * 70)
+    print("CONCLUSAO: Pipeline de Regressão finalizada com sucesso!")
     print("=" * 70)
 
 
