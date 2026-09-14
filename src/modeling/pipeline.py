@@ -12,14 +12,14 @@ from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 
 
-def build_pipeline(preprocessor: ColumnTransformer, classifier: Any) -> Pipeline:
+def build_pipeline(preprocessor: ColumnTransformer, estimator: Any, estimator_name: str = 'classifier') -> Pipeline:
     """
     Creates an end-to-end native Scikit-Learn Pipeline combining
-    preprocessing and classification.
+    preprocessing and an estimator (classifier or regressor).
     """
     return Pipeline(steps=[
         ('preprocessor', preprocessor),
-        ('classifier', classifier)
+        (estimator_name, estimator)
     ])
 
 
@@ -75,4 +75,45 @@ class NativeClassificationPipeline:
     @classmethod
     def load(cls, filepath: str) -> "NativeClassificationPipeline":
         """Loads a serialized pipeline container from disk."""
+        return joblib.load(filepath)
+
+
+class NativeRegressionPipeline:
+    """
+    Production-grade container managing native Scikit-Learn pipelines,
+    fitted models, cross-validation results, and model serialization for regression.
+    """
+
+    def __init__(self, preprocessor: ColumnTransformer):
+        self.preprocessor = preprocessor
+        self.pipelines: Dict[str, Pipeline] = {}
+        self.fitted_pipelines: Dict[str, Pipeline] = {}
+        self.cv_results: Dict[str, Dict[str, Any]] = {}
+        self.best_model_name: Optional[str] = None
+        self.best_pipeline: Optional[Pipeline] = None
+
+    def register_regressor(self, name: str, regressor: Any) -> Pipeline:
+        pipe = build_pipeline(self.preprocessor, regressor, estimator_name='regressor')
+        self.pipelines[name] = pipe
+        return pipe
+
+    def fit_single(self, name: str, X_train: pd.DataFrame, y_train: pd.Series) -> Pipeline:
+        if name not in self.pipelines:
+            raise KeyError(f"Pipeline '{name}' not found.")
+        pipe = self.pipelines[name]
+        pipe.fit(X_train, y_train)
+        self.fitted_pipelines[name] = pipe
+        return pipe
+
+    def predict(self, name: str, X: pd.DataFrame) -> np.ndarray:
+        if name not in self.fitted_pipelines:
+            raise KeyError(f"Pipeline '{name}' not yet fitted.")
+        return self.fitted_pipelines[name].predict(X)
+
+    def export(self, filepath: str) -> None:
+        os.makedirs(os.path.dirname(filepath), exist_ok=True)
+        joblib.dump(self, filepath)
+
+    @classmethod
+    def load(cls, filepath: str) -> "NativeRegressionPipeline":
         return joblib.load(filepath)
