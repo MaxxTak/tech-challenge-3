@@ -1,8 +1,8 @@
 # Tech Challenge - Fase 3: Machine Learning Supervisionado para Alfabetização Infantil
 
-Este repositório contém a solução técnica e analítica completa de Ciência de Dados e Engenharia de Machine Learning para a **Fase 3 do Tech Challenge**.
+Este repositório contém a solução técnica e analítica completa para a **Fase 3 do Tech Challenge**.
 
-O projeto estabelece uma esteira automatizada em **Scikit-Learn nativo**, unificando as tabelas processadas na camada **Gold** da Fase 2 para duas grandes frentes preditivas:
+O projeto estabelece uma esteira automatizada em **Scikit-Learn** (como proposto no tech-challenge), unificando as tabelas processadas na camada **Gold** da Fase 2 para duas grandes frentes preditivas:
 1. **Classificação**: Prever o risco e a probabilidade de cumprimento das metas educacionais municipais.
 2. **Regressão**: Estimar a taxa exata contínua de alfabetização infantil no ano letivo subsequente.
 
@@ -46,7 +46,6 @@ O objetivo deste projeto é construir, validar e disponibilizar em produção um
 - **Prever a taxa exata contínua** de alfabetização que será atingida no próximo ciclo letivo (Modelo de Regressão);
 - **Quantificar a probabilidade de risco** de cada município por meio de um escore preditivo preventivo;
 - **Identificar os fatores críticos de maior impacto** no sucesso ou vulnerabilidade da aprendizagem, utilizando técnicas avançadas de explicabilidade;
-- **Orientar a alocação de recursos públicos** de forma preventiva, equitativa e orientada a dados.
 
 ---
 
