@@ -8,6 +8,27 @@ O projeto estabelece uma esteira automatizada em **Scikit-Learn nativo**, unific
 
 O objetivo é fornecer inteligência acionável e preventiva para a formulação de políticas públicas voltadas à educação básica.
 
+
+Obs: foi utilizado o [repositório da Pós como referência de implementação](https://github.com/AnaRaquelCafe/POSTECH_AI_SCIENTIST/tree/main/Fase%203/Modelos%20de%20Machine%20Learning%20Supervisionados);
+
+---
+
+## Índice
+- [1. Contexto do Problema](#1-contexto-do-problema)
+- [2. Objetivo Analítico](#2-objetivo-analítico)
+- [3. Descrição da Base Utilizada](#3-descrição-da-base-utilizada)
+- [4. Etapas de Modelagem](#4-etapas-de-modelagem)
+- [5. Escolha do Algoritmo](#5-escolha-do-algoritmo)
+- [6. Métricas de Avaliação](#6-métricas-de-avaliação)
+- [7. Interpretação dos Resultados e Explicabilidade](#7-interpretação-dos-resultados-e-explicabilidade)
+- [8. Insights Encontrados e Fatores de Impacto](#8-insights-encontrados-e-fatores-de-impacto)
+- [9. Limitações do Projeto](#9-limitações-do-projeto)
+- [10. Aplicação Prática para Políticas Públicas](#10-aplicação-prática-para-políticas-públicas)
+- [11. Possíveis Evoluções Futuras](#11-possíveis-evoluções-futuras)
+- [12. Estrutura de Pastas do Repositório](#12-estrutura-de-pastas-do-repositório)
+- [13. Instruções de Execução](#13-instruções-de-execução)
+- [14. Links Úteis](#14-links-úteis)
+
 ---
 
 ## 1. Contexto do Problema
@@ -224,3 +245,11 @@ Para carregar os dados, pré-processar, tunar e avaliar Classificação e Regres
 ```bash
 python main.py
 ```
+
+---
+
+## 14. Links Úteis
+
+* [Apresentação do Projeto (Pitch)](#) *(Insira o link do vídeo de apresentação aqui)*
+* [Repositório GitHub](https://github.com/MaxxTak/tech-challenge-3) *(https://github.com/MaxxTak/tech-challenge-3)*
+* [Repositório da Pós usado como referência](https://github.com/AnaRaquelCafe/POSTECH_AI_SCIENTIST/tree/main/Fase%203/Modelos%20de%20Machine%20Learning%20Supervisionados)
