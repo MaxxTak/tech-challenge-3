@@ -27,7 +27,8 @@ Obs: foi utilizado o [repositório da Pós como referência de implementação](
 - [11. Possíveis Evoluções Futuras](#11-possíveis-evoluções-futuras)
 - [12. Estrutura de Pastas do Repositório](#12-estrutura-de-pastas-do-repositório)
 - [13. Instruções de Execução](#13-instruções-de-execução)
-- [14. Links Úteis](#14-links-úteis)
+- [14. Vídeo Executivo](#14-vídeo-executivo)
+- [15. Links Úteis](#15-links-úteis)
 
 ---
 
@@ -223,6 +224,7 @@ tech-challenge-fase3/
 │
 ├── 📁 tests/                                 # Suíte automatizada de testes PyTest
 ├── main.py                                  # Script executivo principal (Orquestrador)
+├── executive.png                            # Thumbnail do vídeo executivo
 ├── requirements.txt
 └── README.md                                 # Esta documentação
 ```
@@ -247,8 +249,18 @@ python main.py
 
 ---
 
-## 14. Links Úteis
+## 14. Vídeo Executivo
 
-* [Apresentação do Projeto (Pitch)](#) *(Insira o link do vídeo de apresentação aqui)*
+Apresentação executiva em vídeo com a contextualização do problema de negócio, esteira de modelagem em Machine Learning, explicabilidade e impactos práticos para a formulação de políticas públicas:
+
+[![Vídeo Executivo](executive.png)](https://youtu.be/E2AfWux8Ssw)
+
+> 🔗 **Acesse o vídeo no YouTube:** [https://youtu.be/E2AfWux8Ssw](https://youtu.be/E2AfWux8Ssw)
+
+---
+
+## 15. Links Úteis
+
+* [Apresentação Executiva do Projeto (Pitch)](https://youtu.be/E2AfWux8Ssw) *(https://youtu.be/E2AfWux8Ssw)*
 * [Repositório GitHub](https://github.com/MaxxTak/tech-challenge-3) *(https://github.com/MaxxTak/tech-challenge-3)*
 * [Repositório da Pós usado como referência](https://github.com/AnaRaquelCafe/POSTECH_AI_SCIENTIST/tree/main/Fase%203/Modelos%20de%20Machine%20Learning%20Supervisionados)
